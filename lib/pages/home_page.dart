@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
       homeContent(),          // 🔥 dibuat ulang saat rebuild
       const HistoryPage(),
       const SettingsPage(),
-      const ProfilePage(),
+      ProfilePage(),
     ];
 
     return Scaffold(
@@ -37,25 +37,23 @@ class _HomePageState extends State<HomePage> {
           : AppBar(
         elevation: 0,
         backgroundColor: Colors.grey[100],
-
+        automaticallyImplyLeading: false,
         title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center, // vertical center
           children: [
-            // 👤 AVATAR (TAMPILAN SAJA)
             GestureDetector(
               onTap: () {
                 setState(() {
-                  bottomIndex = 3; // 👉 pindah ke ProfilePage
+                  bottomIndex = 3;
                 });
               },
               child: const ProfileAvatar(size: 42),
             ),
-
-
             const SizedBox(width: 12),
-
-            // 👋 TEXT
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start, // tetap kiri
+              mainAxisAlignment: MainAxisAlignment.center, // vertical center
               children: const [
                 Text(
                   "Horas 👋",
@@ -76,7 +74,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16),
@@ -140,8 +137,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             menu("Parking", Icons.local_parking, const ParkingSpotPage()),
             menu("Service", Icons.build, const ServicePage()),
-            menu("Road Park", Icons.directions_car, const RoadParkPage()),
-            menu("Mall", Icons.store, const MallParkingPage()),
+            menu("Road Park", Icons.directions_car, const ParkingSpotPage()),
+            menu("Mall", Icons.store, const ParkingSpotPage()),
           ],
         ),
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpPage extends StatelessWidget {
   final name = TextEditingController();
@@ -12,7 +14,7 @@ class SignUpPage extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: const Color(0xFF5A6275),
-        title: const Text("SignUP"),
+        title: const Text("Sign Up"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(25),
@@ -36,31 +38,81 @@ class SignUpPage extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 25),
 
-            // Sign Up Button
+            // SIGN UP BUTTON
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(180, 45),
                 backgroundColor: Colors.blue,
               ),
-              onPressed: () {},
-              child: const Text("SignUp"),
-            )
+              onPressed: () async {
+                if (pass.text != pass2.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Password tidak sama"),
+                    ),
+                  );
+                  return;
+                }
+
+                try {
+                  // 1️⃣ Buat akun di Firebase Auth
+                  UserCredential userCredential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                    email: email.text.trim(),
+                    password: pass.text.trim(),
+                  );
+
+                  // 2️⃣ Ambil UID user
+                  final user = userCredential.user;
+
+                  // 3️⃣ Simpan data user ke Firestore
+                  await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
+                    'name': name.text.trim(),
+                    'email': email.text.trim(),
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Akun berhasil dibuat"),
+                    ),
+                  );
+
+                  Navigator.pop(context); // kembali ke login
+                } on FirebaseAuthException catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.message ?? "Gagal daftar"),
+                    ),
+                  );
+                }
+              },
+
+              child: const Text("Sign Up"),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget textField(String label, TextEditingController c,
-      {bool obscure = false}) {
+  // ================= TEXT FIELD =================
+  Widget textField(
+      String label,
+      TextEditingController controller, {
+        bool obscure = false,
+      }) {
     return TextField(
-      controller: c,
+      controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }

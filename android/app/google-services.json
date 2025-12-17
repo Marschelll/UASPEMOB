@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "962410531760",
+    "project_id": "uaspemmob2-5b248",
+    "storage_bucket": "uaspemmob2-5b248.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:962410531760:android:9e3360284835860cfc2475",
+        "android_client_info": {
+          "package_name": "com.example.uaspememob2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFsa0IZZ4W26REalOnjYPD_DnmElFg-Bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

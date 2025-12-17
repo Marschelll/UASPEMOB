@@ -4,6 +4,7 @@ import 'my_vehicle_page.dart';
 import 'favorite_page.dart';
 import 'first_page.dart';
 import 'address_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -102,13 +103,34 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
 
-          profileItem(
-            context,
-            Icons.email,
-            "Email",
-                () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyVehiclePage()),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.email, color: Colors.blue, size: 28),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    FirebaseAuth.instance.currentUser?.email ?? "-",
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
