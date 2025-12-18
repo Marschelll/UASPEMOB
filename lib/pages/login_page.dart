@@ -1,20 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'forgot_password.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatelessWidget {
+  LoginPage({super.key});
+
   final email = TextEditingController();
   final password = TextEditingController();
 
-  LoginPage({super.key});
+  // ================= GOOGLE LOGIN =================
+  Future<void> loginWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser =
+      await GoogleSignIn().signIn();
+
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
+  // ================= EMAIL LOGIN =================
+  Future<void> login(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.text.trim(),
+        password: password.text.trim(),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? "Login gagal")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF5A6275),
 
-      // 🔙 BACK BUTTON TETAP ADA
       appBar: AppBar(
         backgroundColor: const Color(0xFF5A6275),
         elevation: 0,
@@ -69,32 +117,31 @@ class LoginPage extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // 🔥 LOGIN BUTTON + FIREBASE
+            // ================= EMAIL LOGIN =================
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 minimumSize: const Size(double.infinity, 45),
               ),
-              onPressed: () async {
-                try {
-                  await FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                    email: email.text.trim(),
-                    password: password.text.trim(),
-                  );
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HomePage()),
-                  );
-                } on FirebaseAuthException catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(e.message ?? "Login gagal")),
-                  );
-                }
-              },
+              onPressed: () => login(context),
               child: const Text("Login"),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ================= GOOGLE LOGIN =================
+            OutlinedButton.icon(
+              icon: Image.asset(
+                'assets/login.png', // optional
+                height: 40,
+              ),
+              label: const Text(""),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white),
+                minimumSize: const Size(double.infinity, 45),
+              ),
+              onPressed: () => loginWithGoogle(context),
             ),
           ],
         ),

@@ -9,6 +9,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
+  // ================= USERNAME FROM EMAIL =================
+  String _usernameFromEmail(String? email) {
+    if (email == null || email.isEmpty) return "User";
+
+    final rawName = email.split('@').first;
+    final cleaned = rawName.replaceAll(RegExp(r'[._-]'), ' ');
+
+    return cleaned
+        .split(' ')
+        .map((word) =>
+    word.isNotEmpty
+        ? word[0].toUpperCase() + word.substring(1)
+        : '')
+        .join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,145 +44,156 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
 
-      body: Column(
-        children: [
-          const SizedBox(height: 25),
+      body: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          final username = _usernameFromEmail(user?.email);
 
-          // ================= HEADER =================
-          Stack(
-            alignment: Alignment.bottomRight,
+          return Column(
             children: [
-              const ProfileAvatar(size: 90),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  size: 18,
-                  color: Colors.blue,
-                ),
-              ),
-            ],
-          ),
+              const SizedBox(height: 25),
 
-          const SizedBox(height: 12),
-
-          const Text(
-            "Jordi Sibero",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          const Text(
-            "Bandung, Jawa Barat",
-            style: TextStyle(color: Colors.grey),
-          ),
-
-          const SizedBox(height: 30),
-
-          // ================= MENU =================
-          profileItem(
-            context,
-            Icons.directions_car,
-            "Kendaraan Saya",
-                () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyVehiclePage()),
-            ),
-          ),
-
-          profileItem(
-            context,
-            Icons.location_on,
-            "Alamat",
-                () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddressPage()),
-            ),
-          ),
-
-
-          profileItem(
-            context,
-            Icons.star,
-            "Favorite",
-                () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FavoritePage()),
-            ),
-          ),
-
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.email, color: Colors.blue, size: 28),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    FirebaseAuth.instance.currentUser?.email ?? "-",
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
+              // ================= HEADER =================
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  const ProfileAvatar(size: 90),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 18,
+                      color: Colors.blue,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const Spacer(),
-
-          // ================= SWITCH ACCOUNT =================
-          TextButton(
-            onPressed: () => _showSwitchAccount(context),
-            child: const Text(
-              "Beralih Akun",
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // ================= LOGOUT =================
-          TextButton(
-            onPressed: () {
-              Navigator.of(context, rootNavigator: true)
-                  .pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => FirstPage()),
-                    (route) => false,
-              );
-            },
-            child: const Text(
-              "Keluar",
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
+                ],
               ),
-            ),
-          ),
 
-          const SizedBox(height: 20),
-        ],
+              const SizedBox(height: 12),
+
+              // ===== USERNAME (REALTIME FROM EMAIL) =====
+              Text(
+                username,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              const Text(
+                "Indonesia",
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 30),
+
+              // ================= MENU =================
+              profileItem(
+                context,
+                Icons.directions_car,
+                "Kendaraan Saya",
+                    () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyVehiclePage()),
+                ),
+              ),
+
+              profileItem(
+                context,
+                Icons.location_on,
+                "Alamat",
+                    () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddressPage()),
+                ),
+              ),
+
+              profileItem(
+                context,
+                Icons.star,
+                "Favorite",
+                    () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FavoritePage()),
+                ),
+              ),
+
+              // ================= EMAIL =================
+              Container(
+                margin:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email, color: Colors.blue, size: 28),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        user?.email ?? "-",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Spacer(),
+
+              // ================= SWITCH ACCOUNT =================
+              TextButton(
+                onPressed: () => _showSwitchAccount(context),
+                child: const Text(
+                  "Beralih Akun",
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ================= LOGOUT =================
+              TextButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.of(context, rootNavigator: true)
+                      .pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => FirstPage()),
+                        (route) => false,
+                  );
+                },
+                child: const Text(
+                  "Keluar",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          );
+        },
       ),
     );
   }
@@ -214,15 +241,8 @@ class ProfilePage extends StatelessWidget {
 
               ListTile(
                 leading: const ProfileAvatar(size: 36),
-                title: const Text("Jordi Sibero"),
-                subtitle: const Text("Akun Aktif"),
+                title: const Text("Akun Aktif"),
                 trailing: const Icon(Icons.check, color: Colors.green),
-                onTap: () => Navigator.pop(context),
-              ),
-
-              ListTile(
-                leading: const ProfileAvatar(size: 36),
-                title: const Text("Akun Kedua"),
                 onTap: () => Navigator.pop(context),
               ),
 

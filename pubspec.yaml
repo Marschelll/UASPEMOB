@@ -11,8 +11,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
+  google_sign_in: ^6.2.1
+  geolocator: ^10.1.0
+  http: ^1.6.0
 
   # 🔥 Firebase
   firebase_core: ^2.27.0
@@ -28,5 +33,6 @@ flutter:
 
   assets:
     - assets/logo.png
-
+    - assets/signupp.png
+    - assets/login.png
     # Tambahkan aset lain kalau ada gambar tambahan

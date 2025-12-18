@@ -10,25 +10,38 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> {
-  final user = FirebaseAuth.instance.currentUser;
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
+    // ⛔ USER BELUM LOGIN
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text("User belum login")),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text("Alamat Saya"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      backgroundColor: Colors.grey[100],
 
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddAddress(context),
         child: const Icon(Icons.add),
       ),
 
-      // 🔥 LIST ALAMAT DARI FIREBASE
+      // 🔥 LIST REALTIME DARI FIRESTORE
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
@@ -51,7 +64,9 @@ class _AddressPageState extends State<AddressPage> {
             padding: const EdgeInsets.all(16),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final docId = doc.id;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -64,6 +79,7 @@ class _AddressPageState extends State<AddressPage> {
                   children: [
                     const Icon(Icons.location_on, color: Colors.blue),
                     const SizedBox(width: 12),
+
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,6 +99,12 @@ class _AddressPageState extends State<AddressPage> {
                         ],
                       ),
                     ),
+
+                    // 🗑️ DELETE BUTTON
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDelete(docId),
+                    ),
                   ],
                 ),
               );
@@ -93,7 +115,7 @@ class _AddressPageState extends State<AddressPage> {
     );
   }
 
-  // ➕ TAMBAH ALAMAT (FIREBASE)
+  // ================= TAMBAH ALAMAT =================
   void _showAddAddress(BuildContext context) {
     final titleController = TextEditingController();
     final detailController = TextEditingController();
@@ -149,7 +171,7 @@ class _AddressPageState extends State<AddressPage> {
                       .add({
                     'title': titleController.text.trim(),
                     'detail': detailController.text.trim(),
-                    'createdAt': FieldValue.serverTimestamp(),
+                    'createdAt': Timestamp.now(),
                   });
 
                   Navigator.pop(context);
@@ -158,6 +180,41 @@ class _AddressPageState extends State<AddressPage> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  // ================= HAPUS ALAMAT =================
+  void _confirmDelete(String docId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hapus Alamat"),
+          content: const Text("Yakin ingin menghapus alamat ini?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user!.uid)
+                    .collection('addresses')
+                    .doc(docId)
+                    .delete();
+
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Hapus",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
         );
       },
     );
